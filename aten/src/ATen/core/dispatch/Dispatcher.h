@@ -388,6 +388,8 @@ class TypedOperatorHandle<Return(Args...)> final : public OperatorHandle {
   }
 
   Return callWithDispatchKey(DispatchKey dispatchKey, Args... args) const {
+    std::cout << __FILE__ << " " << __LINE__ << " dispatchKey = " << dispatchKey
+              << std::endl;
     return c10::Dispatcher::singleton().callWithDispatchKey<Return, Args...>(
         *this, dispatchKey, std::forward<Args>(args)...);
   }
@@ -417,6 +419,8 @@ inline Return Dispatcher::callWithDispatchKey(
   // No alias dispatch key is allowed at runtime.
   TORCH_INTERNAL_ASSERT_DEBUG_ONLY(!c10::isAliasDispatchKey(dispatchKey));
   std::cout << __FILE__ << " " << __LINE__ << std::endl;
+  std::cout << __FILE__ << " " << __LINE__ << " dispatchKey = " << dispatchKey
+            << std::endl;
   const KernelFunction& kernel = op.operatorIterator_->op.lookup(dispatchKey);
   std::cout << __FILE__ << " " << __LINE__ << std::endl;
 
@@ -455,13 +459,15 @@ template <class Return, class... Args>
 inline Return Dispatcher::call(
     const TypedOperatorHandle<Return(Args...)>& op,
     Args... args) const {
-  std::cout << __FILE__ << " " << __LINE__ << "inline Return Dispatcher::call"
+  std::cout << __FILE__ << " " << __LINE__ << " inline Return Dispatcher::call"
             << std::endl;
   detail::unused_arg_(args...); // workaround for a false-positive warning about
                                 // unused parameters in gcc 5
   auto dispatchKey = op.operatorIterator_->op.dispatchKeyExtractor()
                          .template getDispatchKeyUnboxed<Args...>(
                              DispatchKeySet::FULL, args...);
+  std::cout << __FILE__ << " " << __LINE__ << " dispatchKey = " << dispatchKey
+            << std::endl;
   return callWithDispatchKey<Return, Args...>(op, dispatchKey, args...);
 }
 
