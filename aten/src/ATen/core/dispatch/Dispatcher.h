@@ -416,6 +416,7 @@ inline Return Dispatcher::callWithDispatchKey(
   // No alias dispatch key is allowed at runtime.
   TORCH_INTERNAL_ASSERT_DEBUG_ONLY(!c10::isAliasDispatchKey(dispatchKey));
   const KernelFunction& kernel = op.operatorIterator_->op.lookup(dispatchKey);
+  std::cout << __FILE__ << " " << __LINE__ << std::endl;
 
 #ifndef PYTORCH_DISABLE_PER_OP_PROFILING
   // Check if we need to run callbacks registered with RecordFunction
@@ -425,6 +426,7 @@ inline Return Dispatcher::callWithDispatchKey(
   // Note: for perf reasons we wouldn't want to pass arguments into
   // the function call or prematurely box them
   at::RecordFunction guard(at::RecordScope::FUNCTION);
+  std::cout << __FILE__ << " " << __LINE__ << std::endl;
   if (C10_UNLIKELY(guard.active)) {
     if (shouldRecord(dispatchKey) && op.operatorIterator_->op.isObserved()) {
       int64_t seq_num = -1;
@@ -443,6 +445,7 @@ inline Return Dispatcher::callWithDispatchKey(
     }
   }
 #endif // PYTORCH_DISABLE_PER_OP_PROFILING
+  std::cout << __FILE__ << " " << __LINE__ << std::endl;
   return kernel.template call<Return, Args...>(op, std::forward<Args>(args)...);
 }
 
