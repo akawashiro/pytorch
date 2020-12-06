@@ -462,6 +462,7 @@ inline Return Dispatcher::redispatch(
     Args... args) const {
   detail::unused_arg_(args...); // workaround for a false-positive warning about
                                 // unused parameters in gcc 5
+  std::cout << "inline Return Dispatcher::redispatch" << std::endl;
   auto dispatchKey =
       op.operatorIterator_->op.dispatchKeyExtractor()
           .template getDispatchKeyUnboxed<Args...>(
