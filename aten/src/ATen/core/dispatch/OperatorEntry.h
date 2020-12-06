@@ -1,21 +1,21 @@
 #pragma once
 
-#include <ATen/core/function_schema.h>
-#include <c10/util/Metaprogramming.h>
-#include <c10/util/flat_hash_map.h>
-#include <c10/util/either.h>
-#include <c10/util/Optional.h>
-#include <c10/core/DispatchKey.h>
-#include <ATen/core/ivalue.h>
 #include <ATen/core/boxing/KernelFunction.h>
 #include <ATen/core/dispatch/DispatchKeyExtractor.h>
+#include <ATen/core/function_schema.h>
+#include <ATen/core/ivalue.h>
+#include <c10/core/DispatchKey.h>
+#include <c10/util/Metaprogramming.h>
+#include <c10/util/Optional.h>
+#include <c10/util/either.h>
+#include <c10/util/flat_hash_map.h>
 
-#include <ATen/core/dispatch/OperatorOptions.h>
 #include <ATen/core/dispatch/CppSignature.h>
+#include <ATen/core/dispatch/OperatorOptions.h>
 #include <ATen/core/dispatch/RegistrationHandleRAII.h>
 
-#include <list>
 #include <array>
+#include <list>
 
 namespace c10 {
 
@@ -29,11 +29,13 @@ namespace impl {
 // we don't put AnnotatedKernel in the actual DispatchTable), but is useful for
 // giving good error messages.
 struct AnnotatedKernel final {
-  AnnotatedKernel(KernelFunction k, std::unique_ptr<FunctionSchema> s, std::string d)
-    : kernel(std::move(k))
-    , inferred_function_schema(std::move(s))
-    , debug(std::move(d))
-    {}
+  AnnotatedKernel(
+      KernelFunction k,
+      std::unique_ptr<FunctionSchema> s,
+      std::string d)
+      : kernel(std::move(k)),
+        inferred_function_schema(std::move(s)),
+        debug(std::move(d)) {}
   AnnotatedKernel() {}
   KernelFunction kernel;
   std::unique_ptr<FunctionSchema> inferred_function_schema;
@@ -47,9 +49,7 @@ struct AnnotatedKernel final {
 // where the registration of this schema occurred
 struct AnnotatedSchema final {
   AnnotatedSchema(FunctionSchema s, std::string d)
-    : schema(std::move(s))
-    , debug(std::move(d))
-    {}
+      : schema(std::move(s)), debug(std::move(d)) {}
   FunctionSchema schema;
   std::string debug;
 };
@@ -62,7 +62,7 @@ struct AnnotatedSchema final {
 // lock (this is important because some methods in OperatorEntry access
 // dispatcher state)
 class CAFFE2_API OperatorEntry final {
-public:
+ public:
   explicit OperatorEntry(OperatorName&& operator_name);
 
   OperatorEntry(const OperatorEntry&) = delete;
@@ -71,7 +71,11 @@ public:
   OperatorEntry& operator=(OperatorEntry&&) noexcept = delete;
 
   const FunctionSchema& schema() const {
-    TORCH_INTERNAL_ASSERT(schema_.has_value(), "Tried to access the schema for ", name_, " which doesn't have a schema registered yet");
+    TORCH_INTERNAL_ASSERT(
+        schema_.has_value(),
+        "Tried to access the schema for ",
+        name_,
+        " which doesn't have a schema registered yet");
     return schema_->schema;
   }
   const std::string& debug() const {
@@ -115,26 +119,21 @@ public:
   // Precondition: Dispatcher::mutex_ is held
   // Postcondition: caller is responsible for disposing of the kernel
   std::list<AnnotatedKernel>::iterator registerKernel(
-    const Dispatcher& dispatcher,
-    c10::optional<DispatchKey> dispatch_key,
-    KernelFunction kernel,
-    c10::optional<CppSignature> cpp_signature,
-    std::unique_ptr<FunctionSchema> inferred_function_schema,
-    std::string debug
-  );
+      const Dispatcher& dispatcher,
+      c10::optional<DispatchKey> dispatch_key,
+      KernelFunction kernel,
+      c10::optional<CppSignature> cpp_signature,
+      std::unique_ptr<FunctionSchema> inferred_function_schema,
+      std::string debug);
 
   // Precondition: Dispatcher::mutex_ is held
   void deregisterKernel_(
-    const Dispatcher& dispatcher,
-    c10::optional<DispatchKey> dispatch_key,
-    std::list<AnnotatedKernel>::iterator kernel
-  );
+      const Dispatcher& dispatcher,
+      c10::optional<DispatchKey> dispatch_key,
+      std::list<AnnotatedKernel>::iterator kernel);
 
   // Precondition: Dispatcher::mutex_ is held
-  void updateFallback(
-    const Dispatcher& dispatcher,
-    DispatchKey dispatch_key
-  );
+  void updateFallback(const Dispatcher& dispatcher, DispatchKey dispatch_key);
 
   // Precondition: Dispatcher::mutex_ is held
   void updateSchemaAliasAnalysis(AliasAnalysisKind a) {
@@ -146,59 +145,84 @@ public:
   std::string dumpState() const;
   void checkInvariants() const;
 
-  const DispatchKeyExtractor& dispatchKeyExtractor() const { return dispatchKeyExtractor_; }
+  const DispatchKeyExtractor& dispatchKeyExtractor() const {
+    return dispatchKeyExtractor_;
+  }
 
-  // This function is a temporary hack that allows generated_unboxing_wrappers.cpp to register its codegen'ed
-  // unboxing wrapper for aten operators. We still need those for some operators because not all work
-  // with the templated unboxing logic yet.
-  // TODO Delete setManuallyBoxedKernel_ once all operators work with the templated boxing logic
-  void setManuallyBoxedKernel_(const c10::Dispatcher& dispatcher, KernelFunction::InternalBoxedKernelFunction* func);
+  // This function is a temporary hack that allows
+  // generated_unboxing_wrappers.cpp to register its codegen'ed unboxing wrapper
+  // for aten operators. We still need those for some operators because not all
+  // work with the templated unboxing logic yet.
+  // TODO Delete setManuallyBoxedKernel_ once all operators work with the
+  // templated boxing logic
+  void setManuallyBoxedKernel_(
+      const c10::Dispatcher& dispatcher,
+      KernelFunction::InternalBoxedKernelFunction* func);
 
-  // Asserts that the given FuncType is correct for calling this operator in an unboxed way.
-  template<class FuncType>
+  // Asserts that the given FuncType is correct for calling this operator in an
+  // unboxed way.
+  template <class FuncType>
   void assertSignatureIsCorrect() {
-    TORCH_CHECK(!cpp_signature_.has_value() || (CppSignature::make<FuncType>() == cpp_signature_->signature),
+    TORCH_CHECK(
+        !cpp_signature_.has_value() ||
+            (CppSignature::make<FuncType>() == cpp_signature_->signature),
         "\nTried to access or call an operator with a wrong signature.\n",
-        "  operator: ", (schema_.has_value() ? toString(schema_->schema) : toString(name_)), "\n",
-        "    ", (schema_.has_value() ? schema_->debug : "unknown debug info"), "\n",
-        "  correct signature:  ", cpp_signature_->signature.name(), "\n",
-        "    ", cpp_signature_->debug, "\n",
-        "  accessed/called as: ", CppSignature::make<FuncType>().name(), "\n",
+        "  operator: ",
+        (schema_.has_value() ? toString(schema_->schema) : toString(name_)),
+        "\n",
+        "    ",
+        (schema_.has_value() ? schema_->debug : "unknown debug info"),
+        "\n",
+        "  correct signature:  ",
+        cpp_signature_->signature.name(),
+        "\n",
+        "    ",
+        cpp_signature_->debug,
+        "\n",
+        "  accessed/called as: ",
+        CppSignature::make<FuncType>().name(),
+        "\n",
         "This likely happened in a call to OperatorHandle::typed<Return (Args...)>(). ",
-        "Please make sure that the function signature matches the signature in the operator registration call."
-    );
+        "Please make sure that the function signature matches the signature in the operator registration call.");
   }
 
   [[noreturn]] void reportError(DispatchKey dispatchKey) const;
 
   const KernelFunction& lookup(DispatchKey k) const {
+    std::cout << __FILE__ << " " << __LINE__ << std::endl;
     const auto& kernel = dispatchTable_[static_cast<uint8_t>(k)];
+    std::cout << __FILE__ << " " << __LINE__ << std::endl;
     if (C10_UNLIKELY(!kernel.isValid())) {
+      std::cout << __FILE__ << " " << __LINE__ << std::endl;
       reportError(k);
     }
+    std::cout << __FILE__ << " " << __LINE__ << std::endl;
     return kernel;
   }
 
   std::string listAllDispatchKeys() const;
 
-private:
-
+ private:
   OperatorName name_;
   c10::optional<AnnotatedSchema> schema_;
 
-  std::array<KernelFunction, static_cast<uint8_t>(DispatchKey::NumDispatchKeys)> dispatchTable_;
+  std::array<KernelFunction, static_cast<uint8_t>(DispatchKey::NumDispatchKeys)>
+      dispatchTable_;
   DispatchKeyExtractor dispatchKeyExtractor_;
 
-  // This manuallyBoxedKernel_ member is a temporary hack that allows generated_unboxing_wrappers.cpp to register its codegen'ed
-  // unboxing wrapper for aten operators. We still need those for some operators because not all work
-  // with the templated unboxing logic yet.
-  // TODO Delete manuallyBoxedKernel_ once all operators work with the templated boxing logic
-  c10::optional<KernelFunction::InternalBoxedKernelFunction*> manuallyBoxedKernel_;
+  // This manuallyBoxedKernel_ member is a temporary hack that allows
+  // generated_unboxing_wrappers.cpp to register its codegen'ed unboxing wrapper
+  // for aten operators. We still need those for some operators because not all
+  // work with the templated unboxing logic yet.
+  // TODO Delete manuallyBoxedKernel_ once all operators work with the templated
+  // boxing logic
+  c10::optional<KernelFunction::InternalBoxedKernelFunction*>
+      manuallyBoxedKernel_;
 
   // kernels_ stores all registered kernels for the corresponding dispatch key
   // and catchAllKernels_ stores the catch-all kernels.
-  // If an operator library gets loaded that overwrites an already existing kernel,
-  // both kernels will be in that list but only the newer one will be in
+  // If an operator library gets loaded that overwrites an already existing
+  // kernel, both kernels will be in that list but only the newer one will be in
   // dispatchTable. If any of the kernels go away (say the library gets
   // unloaded), we remove the kernel from this list and update the
   // dispatchTable if necessary.
@@ -247,22 +271,32 @@ private:
   // Whether this operator needs to be observed with RecordFunction
   const bool is_observed_;
 
-  const KernelFunction& computeDispatchTableEntry(const c10::Dispatcher& dispatcher, DispatchKey dispatch_key) const;
-  std::pair<const AnnotatedKernel&, const char*> computeDispatchTableEntryWithDebug(
-    const c10::Dispatcher& dispatcher, DispatchKey dispatch_key
-  ) const;
+  const KernelFunction& computeDispatchTableEntry(
+      const c10::Dispatcher& dispatcher,
+      DispatchKey dispatch_key) const;
+  std::pair<const AnnotatedKernel&, const char*>
+  computeDispatchTableEntryWithDebug(
+      const c10::Dispatcher& dispatcher,
+      DispatchKey dispatch_key) const;
   // This function re-establishes the invariant that dispatchTable
-  // contains the front element from the kernels list for a given runtime dispatch key.
-  void updateDispatchTableEntry_(const c10::Dispatcher& dispatcher, DispatchKey dispatch_key);
+  // contains the front element from the kernels list for a given runtime
+  // dispatch key.
+  void updateDispatchTableEntry_(
+      const c10::Dispatcher& dispatcher,
+      DispatchKey dispatch_key);
   // Like above, but also handles alias dispatch keys.
-  void updateDispatchTable_(const c10::Dispatcher& dispatcher, DispatchKey dispatch_key);
+  void updateDispatchTable_(
+      const c10::Dispatcher& dispatcher,
+      DispatchKey dispatch_key);
   // Like above, but for ALL entries in the dispatch table.
   void updateDispatchTableFull_(const c10::Dispatcher& dispatcher);
 
   // Returns true if kernel_ has entry for any key in ks.
   bool hasKernelForAnyDispatchKey(DispatchKeySet ks) const;
-  // Retrieves a pointer to AnnotatedKernel at kernels_.at(dispatch_key).front().
-  c10::optional<const AnnotatedKernel*> getKernelForDispatchKey(DispatchKey dispatch_key) const;
+  // Retrieves a pointer to AnnotatedKernel at
+  // kernels_.at(dispatch_key).front().
+  c10::optional<const AnnotatedKernel*> getKernelForDispatchKey(
+      DispatchKey dispatch_key) const;
 };
 
 } // namespace impl
