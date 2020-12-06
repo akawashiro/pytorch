@@ -410,11 +410,13 @@ inline Return Dispatcher::callWithDispatchKey(
     DispatchKey dispatchKey,
     Args... args) const {
   std::cout << __FILE__ << " " << __LINE__
-            << "inline Return Dispatcher::callWithDispatchKey" << std::endl;
+            << " inline Return Dispatcher::callWithDispatchKey" << std::endl;
   detail::unused_arg_(args...); // workaround for a false-positive warning about
                                 // unused parameters in gcc 5
+  std::cout << __FILE__ << " " << __LINE__ << std::endl;
   // No alias dispatch key is allowed at runtime.
   TORCH_INTERNAL_ASSERT_DEBUG_ONLY(!c10::isAliasDispatchKey(dispatchKey));
+  std::cout << __FILE__ << " " << __LINE__ << std::endl;
   const KernelFunction& kernel = op.operatorIterator_->op.lookup(dispatchKey);
   std::cout << __FILE__ << " " << __LINE__ << std::endl;
 
