@@ -190,6 +190,14 @@ class CAFFE2_API OperatorEntry final {
 
   const KernelFunction& lookup(DispatchKey k) const {
     std::cout << __FILE__ << " " << __LINE__ << std::endl;
+    std::cout << "static_cast<uint8_t>(k) = " << static_cast<uint8_t>(k)
+              << std::endl;
+    std::cout << "static_cast<int>(k) = " << static_cast<int>(k) << std::endl;
+    std::cout << "k = " << k << std::endl;
+    std::cout << "DispatchKey::NumDispatchKeys = "
+              << DispatchKey::NumDispatchKeys << std::endl;
+    std::cout << "dispatchTable_.size() = " << dispatchTable_.size()
+              << std::endl;
     const auto& kernel = dispatchTable_[static_cast<uint8_t>(k)];
     std::cout << __FILE__ << " " << __LINE__ << std::endl;
     if (C10_UNLIKELY(!kernel.isValid())) {
