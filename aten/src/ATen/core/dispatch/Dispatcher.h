@@ -381,7 +381,8 @@ class TypedOperatorHandle<Return(Args...)> final : public OperatorHandle {
   TypedOperatorHandle& operator=(const TypedOperatorHandle&) = default;
 
   Return call(Args... args) const {
-    std::cout << "Return call(Args... args) const" << std::endl;
+    std::cout << __FILE__ << " " << __LINE__
+              << "Return call(Args... args) const" << std::endl;
     return c10::Dispatcher::singleton().call<Return, Args...>(
         *this, std::forward<Args>(args)...);
   }
@@ -408,6 +409,8 @@ inline Return Dispatcher::callWithDispatchKey(
     const TypedOperatorHandle<Return(Args...)>& op,
     DispatchKey dispatchKey,
     Args... args) const {
+  std::cout << __FILE__ << " " << __LINE__
+            << "inline Return Dispatcher::callWithDispatchKey" << std::endl;
   detail::unused_arg_(args...); // workaround for a false-positive warning about
                                 // unused parameters in gcc 5
   // No alias dispatch key is allowed at runtime.
@@ -447,6 +450,8 @@ template <class Return, class... Args>
 inline Return Dispatcher::call(
     const TypedOperatorHandle<Return(Args...)>& op,
     Args... args) const {
+  std::cout << __FILE__ << " " << __LINE__ << "inline Return Dispatcher::call"
+            << std::endl;
   detail::unused_arg_(args...); // workaround for a false-positive warning about
                                 // unused parameters in gcc 5
   auto dispatchKey = op.operatorIterator_->op.dispatchKeyExtractor()
