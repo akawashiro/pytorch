@@ -5,7 +5,10 @@
 namespace c10 {
 namespace impl {
 
-C10_DEFINE_bool(disable_variable_dispatch, false, "This flag forcibly disables the Variable code paths from executing, which currently breaks profiling in the process.");
+C10_DEFINE_bool(
+    disable_variable_dispatch,
+    false,
+    "This flag forcibly disables the Variable code paths from executing, which currently breaks profiling in the process.");
 
 namespace {
 
@@ -31,40 +34,43 @@ LocalDispatchKeySet tls_local_dispatch_key_set() {
   // to me, as it seems to be performing a mutation on
   // raw_local_dispatch_key_set.  I can't conveniently test the correct
   // version though...
+  std::cout << __FILE__ << ":" << __LINE__ << "(tls_local_dispatch_key_set)"
+            << std::endl;
   if (FLAGS_disable_variable_dispatch) {
     raw_local_dispatch_key_set.set_excluded(
-      raw_local_dispatch_key_set.excluded() | autograd_dispatch_keyset);
+        raw_local_dispatch_key_set.excluded() | autograd_dispatch_keyset);
   }
   return raw_local_dispatch_key_set;
 }
 
 void _force_tls_local_dispatch_key_set(LocalDispatchKeySet key_set) {
-  raw_local_dispatch_key_set = PODLocalDispatchKeySet {
-    key_set.included_.raw_repr(),
-    key_set.excluded_.raw_repr()
-  };
+  raw_local_dispatch_key_set = PODLocalDispatchKeySet{
+      key_set.included_.raw_repr(), key_set.excluded_.raw_repr()};
 }
 
-// An RAII guard could snapshot and restore the entire state (entire DispatchKeySet) as
-// opposed to only snapshotting and restoring the state of its assigned DispatchKeySet.
-// I'm not sure which is better.  If only the RAII API is used, the two choices are
-// not distinguishable.
+// An RAII guard could snapshot and restore the entire state (entire
+// DispatchKeySet) as opposed to only snapshotting and restoring the state of
+// its assigned DispatchKeySet. I'm not sure which is better.  If only the RAII
+// API is used, the two choices are not distinguishable.
 //
-// However, if the guard chooses to snapshot and restore the entire DispatchKeySet,
-// the interaction with the non-RAII API changes.  Consider this sequence of events:
-// - An RAII guard is declared for a particular DispatchKeySet, but snapshots the entire
+// However, if the guard chooses to snapshot and restore the entire
+// DispatchKeySet, the interaction with the non-RAII API changes.  Consider this
+// sequence of events:
+// - An RAII guard is declared for a particular DispatchKeySet, but snapshots
+// the entire
 //   current DispatchKeySet.
-// - A call to the non-RAII API changes the state for DispatchKeys outside the assigned
+// - A call to the non-RAII API changes the state for DispatchKeys outside the
+// assigned
 //   set.
-// - The RAII guard goes out of scope, restoring the entire DispatchKeySet it snapshotted
-//   (which restores the state for its own assigned DispatchKey and wipes out the state
-//   for the other DispatchKeys set by the non-RAII API).
+// - The RAII guard goes out of scope, restoring the entire DispatchKeySet it
+// snapshotted
+//   (which restores the state for its own assigned DispatchKey and wipes out
+//   the state for the other DispatchKeys set by the non-RAII API).
 
 // RAII API
 
 IncludeDispatchKeyGuard::IncludeDispatchKeyGuard(DispatchKeySet include)
-  : tls_(&raw_local_dispatch_key_set)
-  , include_(include - tls_->included()) {
+    : tls_(&raw_local_dispatch_key_set), include_(include - tls_->included()) {
   if (!include_.empty()) {
     tls_->set_included(tls_->included() | include_);
   }
@@ -77,8 +83,7 @@ IncludeDispatchKeyGuard::~IncludeDispatchKeyGuard() {
 }
 
 ExcludeDispatchKeyGuard::ExcludeDispatchKeyGuard(DispatchKeySet exclude)
-  : tls_(&raw_local_dispatch_key_set)
-  , exclude_(exclude - tls_->excluded()) {
+    : tls_(&raw_local_dispatch_key_set), exclude_(exclude - tls_->excluded()) {
   if (!exclude_.empty()) {
     tls_->set_excluded(tls_->excluded() | exclude_);
   }
@@ -91,7 +96,8 @@ ExcludeDispatchKeyGuard::~ExcludeDispatchKeyGuard() {
 }
 
 // Non-RAII API
-// Please prefer using the RAII API. See declarations in LocalDispatchKeySet.h for details.
+// Please prefer using the RAII API. See declarations in LocalDispatchKeySet.h
+// for details.
 
 bool tls_is_dispatch_key_excluded(DispatchKey x) {
   return raw_local_dispatch_key_set.excluded().has(x);
@@ -125,4 +131,5 @@ void tls_set_dispatch_key_included(DispatchKey x, bool desired_state) {
   }
 }
 
-}} // namespace c10::impl
+} // namespace impl
+} // namespace c10
