@@ -152,6 +152,8 @@ struct CAFFE2_API DispatchKeyExtractor final {
     std::cout << __FILE__ << ":" << __LINE__ << "(getDispatchKeyUnboxed)"
               << std::endl;
     auto ks = detail::multi_dispatch_key_set(args...);
+    auto r = dispatchKeySetToDispatchKey_(eligibleKeys, ks);
+    std::cout << __FILE__ << ":" << __LINE__ << " r = " << r << std::endl;
     return dispatchKeySetToDispatchKey_(eligibleKeys, ks);
   }
 
@@ -195,7 +197,9 @@ struct CAFFE2_API DispatchKeyExtractor final {
             // eligible for dispatch, as requested by the user
             & eligibleKeys);
     std::cout << __LINE__ << ":" << __FILE__ << " r = " << r << std::endl;
-    return r;
+    // return r;
+    // TODO(akawashiro) Ad-hoc Patch
+    return DispatchKey::CPU;
   }
 
   explicit DispatchKeyExtractor(c10::utils::bitset dispatch_arg_indices_reverse)
