@@ -51,7 +51,7 @@ static inline DispatchKey dispatchTypeId(
   auto r =
       (((ks | local.included_ | always_included) - local.excluded_) & key_mask)
           .highestPriorityTypeId();
-  std::cout << __FILE__ << ":" << __LINE__ << " (dispatchTypeId) r = " << r
+  std::cerr << __FILE__ << ":" << __LINE__ << " (dispatchTypeId) r = " << r
             << std::endl;
   return r;
 }
@@ -149,11 +149,11 @@ struct CAFFE2_API DispatchKeyExtractor final {
   DispatchKey getDispatchKeyUnboxed(
       DispatchKeySet eligibleKeys,
       const Args&... args) const {
-    std::cout << __FILE__ << ":" << __LINE__ << "(getDispatchKeyUnboxed)"
+    std::cerr << __FILE__ << ":" << __LINE__ << "(getDispatchKeyUnboxed)"
               << std::endl;
     auto ks = detail::multi_dispatch_key_set(args...);
     auto r = dispatchKeySetToDispatchKey_(eligibleKeys, ks);
-    std::cout << __FILE__ << ":" << __LINE__ << " r = " << r << std::endl;
+    std::cerr << __FILE__ << ":" << __LINE__ << " r = " << r << std::endl;
     return dispatchKeySetToDispatchKey_(eligibleKeys, ks);
   }
 
@@ -187,7 +187,7 @@ struct CAFFE2_API DispatchKeyExtractor final {
       // This is often known statically to be all ones; IN OPTIMIZER WE TRUST
       DispatchKeySet eligibleKeys,
       DispatchKeySet ks) const {
-    std::cout << __LINE__ << ":" << __FILE__ << "(dispatchKeySetToDispatchKey_)"
+    std::cerr << __LINE__ << ":" << __FILE__ << "(dispatchKeySetToDispatchKey_)"
               << std::endl;
     auto r = impl::dispatchTypeId(
         ks,
@@ -196,7 +196,7 @@ struct CAFFE2_API DispatchKeyExtractor final {
             // Regardless of fallthrough behavior, only accept keys which are
             // eligible for dispatch, as requested by the user
             & eligibleKeys);
-    std::cout << __LINE__ << ":" << __FILE__ << " r = " << r << std::endl;
+    std::cerr << __LINE__ << ":" << __FILE__ << " r = " << r << std::endl;
     // return r;
     // TODO(akawashiro) Ad-hoc Patch
     return DispatchKey::CPU;

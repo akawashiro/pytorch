@@ -34,13 +34,13 @@ LocalDispatchKeySet tls_local_dispatch_key_set() {
   // to me, as it seems to be performing a mutation on
   // raw_local_dispatch_key_set.  I can't conveniently test the correct
   // version though...
-  std::cout << __FILE__ << ":" << __LINE__ << "(tls_local_dispatch_key_set)"
+  std::cerr << __FILE__ << ":" << __LINE__ << "(tls_local_dispatch_key_set)"
             << std::endl;
   if (FLAGS_disable_variable_dispatch) {
     raw_local_dispatch_key_set.set_excluded(
         raw_local_dispatch_key_set.excluded() | autograd_dispatch_keyset);
   }
-  std::cout << __FILE__ << ":" << __LINE__
+  std::cerr << __FILE__ << ":" << __LINE__
             << " raw_local_dispatch_key_set.included_ = "
             << raw_local_dispatch_key_set.included_
             << " raw_local_dispatch_key_set.excluded_ = "

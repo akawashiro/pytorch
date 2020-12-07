@@ -381,14 +381,14 @@ class TypedOperatorHandle<Return(Args...)> final : public OperatorHandle {
   TypedOperatorHandle& operator=(const TypedOperatorHandle&) = default;
 
   Return call(Args... args) const {
-    std::cout << __FILE__ << " " << __LINE__
+    std::cerr << __FILE__ << " " << __LINE__
               << "Return call(Args... args) const" << std::endl;
     return c10::Dispatcher::singleton().call<Return, Args...>(
         *this, std::forward<Args>(args)...);
   }
 
   Return callWithDispatchKey(DispatchKey dispatchKey, Args... args) const {
-    std::cout << __FILE__ << " " << __LINE__ << " dispatchKey = " << dispatchKey
+    std::cerr << __FILE__ << " " << __LINE__ << " dispatchKey = " << dispatchKey
               << std::endl;
     return c10::Dispatcher::singleton().callWithDispatchKey<Return, Args...>(
         *this, dispatchKey, std::forward<Args>(args)...);
@@ -411,18 +411,18 @@ inline Return Dispatcher::callWithDispatchKey(
     const TypedOperatorHandle<Return(Args...)>& op,
     DispatchKey dispatchKey,
     Args... args) const {
-  std::cout << __FILE__ << " " << __LINE__
+  std::cerr << __FILE__ << " " << __LINE__
             << " inline Return Dispatcher::callWithDispatchKey" << std::endl;
   detail::unused_arg_(args...); // workaround for a false-positive warning about
                                 // unused parameters in gcc 5
-  std::cout << __FILE__ << " " << __LINE__ << std::endl;
+  std::cerr << __FILE__ << " " << __LINE__ << std::endl;
   // No alias dispatch key is allowed at runtime.
   TORCH_INTERNAL_ASSERT_DEBUG_ONLY(!c10::isAliasDispatchKey(dispatchKey));
-  std::cout << __FILE__ << " " << __LINE__ << std::endl;
-  std::cout << __FILE__ << " " << __LINE__ << " dispatchKey = " << dispatchKey
+  std::cerr << __FILE__ << " " << __LINE__ << std::endl;
+  std::cerr << __FILE__ << " " << __LINE__ << " dispatchKey = " << dispatchKey
             << std::endl;
   const KernelFunction& kernel = op.operatorIterator_->op.lookup(dispatchKey);
-  std::cout << __FILE__ << " " << __LINE__ << std::endl;
+  std::cerr << __FILE__ << " " << __LINE__ << std::endl;
 
 #ifndef PYTORCH_DISABLE_PER_OP_PROFILING
   // Check if we need to run callbacks registered with RecordFunction
@@ -432,7 +432,7 @@ inline Return Dispatcher::callWithDispatchKey(
   // Note: for perf reasons we wouldn't want to pass arguments into
   // the function call or prematurely box them
   at::RecordFunction guard(at::RecordScope::FUNCTION);
-  std::cout << __FILE__ << " " << __LINE__ << std::endl;
+  std::cerr << __FILE__ << " " << __LINE__ << std::endl;
   if (C10_UNLIKELY(guard.active)) {
     if (shouldRecord(dispatchKey) && op.operatorIterator_->op.isObserved()) {
       int64_t seq_num = -1;
@@ -451,7 +451,7 @@ inline Return Dispatcher::callWithDispatchKey(
     }
   }
 #endif // PYTORCH_DISABLE_PER_OP_PROFILING
-  std::cout << __FILE__ << " " << __LINE__ << std::endl;
+  std::cerr << __FILE__ << " " << __LINE__ << std::endl;
   return kernel.template call<Return, Args...>(op, std::forward<Args>(args)...);
 }
 
@@ -459,14 +459,14 @@ template <class Return, class... Args>
 inline Return Dispatcher::call(
     const TypedOperatorHandle<Return(Args...)>& op,
     Args... args) const {
-  std::cout << __FILE__ << " " << __LINE__ << " inline Return Dispatcher::call"
+  std::cerr << __FILE__ << " " << __LINE__ << " inline Return Dispatcher::call"
             << std::endl;
   detail::unused_arg_(args...); // workaround for a false-positive warning about
                                 // unused parameters in gcc 5
   auto dispatchKey = op.operatorIterator_->op.dispatchKeyExtractor()
                          .template getDispatchKeyUnboxed<Args...>(
                              DispatchKeySet::FULL, args...);
-  std::cout << __FILE__ << " " << __LINE__ << " dispatchKey = " << dispatchKey
+  std::cerr << __FILE__ << " " << __LINE__ << " dispatchKey = " << dispatchKey
             << std::endl;
   return callWithDispatchKey<Return, Args...>(op, dispatchKey, args...);
 }
@@ -478,7 +478,8 @@ inline Return Dispatcher::redispatch(
     Args... args) const {
   detail::unused_arg_(args...); // workaround for a false-positive warning about
                                 // unused parameters in gcc 5
-  std::cout << "inline Return Dispatcher::redispatch" << std::endl;
+  std::cerr << __FILE__ << " " << __LINE__
+            << " inline Return Dispatcher::redispatch" << std::endl;
   auto dispatchKey =
       op.operatorIterator_->op.dispatchKeyExtractor()
           .template getDispatchKeyUnboxed<Args...>(
