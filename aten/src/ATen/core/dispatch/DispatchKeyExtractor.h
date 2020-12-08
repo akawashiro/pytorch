@@ -196,9 +196,13 @@ struct CAFFE2_API DispatchKeyExtractor final {
             // Regardless of fallthrough behavior, only accept keys which are
             // eligible for dispatch, as requested by the user
             & eligibleKeys);
-    std::cerr << __LINE__ << ":" << __FILE__ << " r = " << r << std::endl;
+    // std::cerr << __LINE__ << ":" << __FILE__ << " r = " << r << std::endl;
     // return r;
+
     // TODO(akawashiro) Ad-hoc Patch
+    std::cerr << __LINE__ << ":" << __FILE__
+              << " Use ad-hoc patch. Return  DispatchKey::CPU instead of " << r
+              << std::endl;
     return DispatchKey::CPU;
   }
 
