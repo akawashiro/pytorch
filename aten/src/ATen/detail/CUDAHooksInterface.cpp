@@ -2,6 +2,7 @@
 
 #include <c10/util/Exception.h>
 
+#include <iostream>
 #include <cstddef>
 #include <memory>
 #include <mutex>
@@ -34,13 +35,16 @@ const CUDAHooksInterface& getCUDAHooks() {
   // for an example where we relax this restriction (but if you try to avoid
   // needing a lock, be careful; it doesn't look like Registry.h is thread
   // safe...)
+  std::cout << __FILE__ << ":" << __LINE__ << std::endl;
   static std::once_flag once;
+  std::cout << __FILE__ << ":" << __LINE__ << std::endl;
   std::call_once(once, [] {
     cuda_hooks = CUDAHooksRegistry()->Create("CUDAHooks", CUDAHooksArgs{}).release();
     if (!cuda_hooks) {
       cuda_hooks = new CUDAHooksInterface();
     }
   });
+  std::cout << __FILE__ << ":" << __LINE__ << std::endl;
   return *cuda_hooks;
 }
 } // namespace detail
