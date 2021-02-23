@@ -586,7 +586,9 @@ at::Tensor convolution(
     bool transposed, IntArrayRef output_padding, int64_t groups) {
   auto& ctx = at::globalContext();
   // See Note [Enabling Deterministic Operations]
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
   bool deterministic = ctx.deterministicCuDNN() || ctx.deterministic();
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
   return at::_convolution(input, weight, bias, stride, padding, dilation,
                           transposed, output_padding, groups,
                           ctx.benchmarkCuDNN(), deterministic, ctx.userEnabledCuDNN(), ctx.allowTF32CuDNN());
@@ -605,6 +607,7 @@ at::Tensor _convolution(
     bool transposed_, IntArrayRef output_padding_, int64_t groups_,
     bool benchmark, bool deterministic, bool cudnn_enabled, bool allow_tf32) {
 
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
   const bool input_is_mkldnn = input_r.is_mkldnn();
   auto input = input_r;
   auto weight = weight_r;
@@ -613,8 +616,10 @@ at::Tensor _convolution(
   c10::IntArrayRef weight_sizes = weight.sizes();
   int64_t dim = k - 2;
 
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
   TORCH_CHECK(dim > 0, "weight should have at least three dimensions");
 
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
   ConvParams params;
   params.stride = expand_param_if_needed(stride_, "stride", dim);
   params.padding = expand_param_if_needed(padding_, "padding", dim);
@@ -627,16 +632,21 @@ at::Tensor _convolution(
   params.cudnn_enabled = cudnn_enabled;
   params.allow_tf32 = allow_tf32;
 
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
   check_shape_forward(input, weight_sizes, bias, params);
 
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
   if (input.size(0) == 0) {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
     // don't send empty inputs through backends
     // but need to compute correct output size first and set up history for params
     std::vector<int64_t> o;
     if (!params.transposed) {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
       o = conv_output_size(input.sizes(), weight_sizes, params.padding,
                            params.stride, params.dilation);
     } else {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
       o = conv_input_size(input.sizes(), weight_sizes, params.padding,
                           params.output_padding, params.stride, params.dilation,
                           params.groups);
@@ -647,6 +657,7 @@ at::Tensor _convolution(
       out.add_(bias[0]);
     return out.view(o);
   }
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
 
   if (k == 3) {
     // avoid accidentally going through NHWC for permuted 3d input.
@@ -658,13 +669,16 @@ at::Tensor _convolution(
     weight = view4d(weight);
   }
 
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
   at::MemoryFormat cudnn_memory_format = cudnn_conv_use_channels_last(input, weight) ?
       at::MemoryFormat::ChannelsLast : at::MemoryFormat::Contiguous;
 
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
   Tensor output;
   if (params.is_depthwise(input, weight)) {
       /* output.resize_(output_size(input, weight)); */
 
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
       auto kernel_size = weight.sizes().slice(2);
       auto stride = params.stride;
       auto padding = params.padding;
@@ -674,10 +688,12 @@ at::Tensor _convolution(
             input.contiguous(cudnn_memory_format), weight,
             padding, stride, dilation, params.groups, params.benchmark, params.deterministic, params.allow_tf32);
         if (bias.defined()) {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
           output.add_(reshape_bias(input.dim(), bias));
         }
 
       } else if (params.use_miopen(input, weight, bias.defined())){
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
         output = at::miopen_depthwise_convolution(
             input.contiguous(), weight, bias,
             padding, stride, dilation, params.groups, params.benchmark, params.deterministic);
@@ -685,6 +701,7 @@ at::Tensor _convolution(
           output = at::thnn_conv_depthwise2d(input.contiguous(), weight, kernel_size, bias, stride, padding, dilation);
       }
   } else if (params.use_cudnn(input, weight)) {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
     TORCH_CHECK(input.options().type_equal(weight.options()),
              "Input type (", input.toString(), ") and weight type (", weight.toString(),
              ") should be the same");
@@ -693,6 +710,7 @@ at::Tensor _convolution(
              ") should be the same");
 
     if (params.transposed) {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
       output = at::cudnn_convolution_transpose(
           input.contiguous(cudnn_memory_format), weight,
           params.padding, params.output_padding, params.stride, params.dilation, params.groups, params.benchmark, params.deterministic, params.allow_tf32);
@@ -700,14 +718,17 @@ at::Tensor _convolution(
         output.add_(reshape_bias(input.dim(), bias));
       }
     } else {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
       output = at::cudnn_convolution(
           input.contiguous(cudnn_memory_format), weight,
           params.padding, params.stride, params.dilation, params.groups, params.benchmark, params.deterministic, params.allow_tf32);
       if (bias.defined()) {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
         output.add_(reshape_bias(input.dim(), bias));
       }
     }
   } else if (params.use_miopen(input, weight, bias.defined())) {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
     TORCH_CHECK(input.options().type_equal(weight.options()),
              "Input type (", input.toString(), ") and weight type (", weight.toString(),
              ") should be the same");
@@ -716,15 +737,18 @@ at::Tensor _convolution(
              ") should be the same");
 
     if (params.transposed) {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
       output = at::miopen_convolution_transpose(
           input.contiguous(), weight, bias,
           params.padding, params.output_padding, params.stride, params.dilation, params.groups, params.benchmark, params.deterministic);
     } else {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
       output = at::miopen_convolution(
           input.contiguous(), weight, bias,
           params.padding, params.stride, params.dilation, params.groups, params.benchmark, params.deterministic);
     }
   } else if (params.use_mkldnn(input, weight)) {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
 #if AT_MKLDNN_ENABLED()
     TORCH_CHECK(input.options().type_equal(weight.options()),
              "Input type (", input.toString(), ") and weight type (", weight.toString(),
@@ -733,15 +757,18 @@ at::Tensor _convolution(
              "Input type (", input.toString(), ") and bias type (", bias.toString(),
              ") should be the same");
     if (!input_is_mkldnn) {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
       output = at::mkldnn_convolution(input.contiguous(), weight.contiguous(), bias.defined() ? bias.contiguous() : bias,
                                       params.padding, params.stride, params.dilation, params.groups);
     } else {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
       // do not call contiguous on mkldnn tensor
       output = at::mkldnn_convolution(input, weight, bias,
                                       params.padding, params.stride, params.dilation, params.groups);
     }
 #endif
   } else if (params.use_xnnpack(input, weight, bias)) {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
     // Using prepacked conv is preferred, but XNNPACK is still the fastest
     // option for NHWC.
     output = xnnpack::convolution2d(
@@ -753,6 +780,7 @@ at::Tensor _convolution(
         params.dilation,
         params.groups);
   } else if (params.use_cpu_depthwise3x3_winograd(input, weight, bias)) {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
     output = convolution_depthwise3x3_winograd_stub(
         input.device().type(),
         input,
@@ -765,6 +793,7 @@ at::Tensor _convolution(
         !params.transposed && (input.ndimension() == 5) &&
         (input.device().type() == c10::DeviceType::CPU) &&
         !params.is_dilated()) {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
       // fast path for grouped conv3d
       output = at::slow_conv3d(
           input,
@@ -775,9 +804,11 @@ at::Tensor _convolution(
           params.padding);
   } else if (input.device().type() == c10::DeviceType::CPU || input.device().type() == c10::DeviceType::CUDA) {
     if (params.groups == 1) {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
       output = at::_convolution_nogroup(
           input.contiguous(), weight, bias, params.stride, params.padding, params.dilation, params.transposed, params.output_padding);
     } else {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
       std::vector<Tensor> outputs(params.groups);
       input = input.contiguous();
       for (int g = 0; g < params.groups; ++g) {
@@ -791,13 +822,16 @@ at::Tensor _convolution(
     }
   } else {
     // Only reach here when input is backend with out-of-source implementation.
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
     output = at::convolution_overrideable(input, weight, bias, params.stride, params.padding, params.dilation, params.transposed, params.output_padding, params.groups);
   }
 
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
   if (k == 3) {
     output = view3d(output);
   }
 
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
   return output;
 }
 
