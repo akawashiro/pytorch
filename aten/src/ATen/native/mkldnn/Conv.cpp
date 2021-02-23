@@ -64,14 +64,17 @@ ideep::tensor _mkldnn_convolution(
     IntArrayRef dilation,
     int64_t groups) {
 
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
   auto kernel_size = w.get_dims();
 
   std::vector<int64_t> input_size = x.get_dims();
   std::vector<int64_t> output_sizes =
       conv_output_size(input_size, kernel_size, padding, stride, dilation);
 
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
   ideep::tensor y;
   if (b.has_value()) {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
     ideep::convolution_forward::compute(
         x,
         w,
@@ -84,6 +87,7 @@ ideep::tensor _mkldnn_convolution(
         {padding.begin(), padding.end()},
         groups);
   } else {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
     ideep::convolution_forward::compute(
         x,
         w,
@@ -95,6 +99,7 @@ ideep::tensor _mkldnn_convolution(
         {padding.begin(), padding.end()},
         groups);
   }
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
   return y;
 }
 
@@ -106,11 +111,14 @@ Tensor mkldnn_convolution(
     IntArrayRef stride,
     IntArrayRef dilation,
     int64_t groups) {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
   const ideep::tensor mkldnn_input = get_mkldnn_tensor(input);
   const ideep::tensor mkldnn_weight = get_mkldnn_tensor(weight);
   c10::optional<ideep::tensor> mkldnn_bias{c10::nullopt};
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
   if (bias.defined()) {
     mkldnn_bias = get_mkldnn_tensor(bias);
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
   }
 
   ideep::tensor mkldnn_output = _mkldnn_convolution(
@@ -121,10 +129,13 @@ Tensor mkldnn_convolution(
       stride,
       dilation,
       groups);
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
 
   if (input.is_mkldnn()) {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
     return new_with_itensor_mkldnn(std::move(mkldnn_output), input.options());
   } else {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
     return mkldnn_to_dense(
         new_with_itensor_mkldnn(std::move(mkldnn_output), input.options()));
   }

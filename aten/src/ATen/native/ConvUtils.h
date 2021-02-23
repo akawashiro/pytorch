@@ -85,9 +85,9 @@ static inline bool cudnn_conv_use_channels_last(const at::Tensor& input, const a
   std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
   // disable NHWC for float64 input.
   if (!detail::getCUDAHooks().compiledWithCuDNN() ||
-  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
       input.scalar_type() == at::kDouble ||
       weight.scalar_type() == at::kDouble) {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
     return false;
   }
   std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
