@@ -62,12 +62,13 @@ const CUDAHooksInterface& getCUDAHooks() {
     }
     std::cerr << __FILE__ << ":" << __LINE__ << " call_once in CUDAHookInterface.cpp" << std::endl;
     std::cerr << __FILE__ << ":" << __LINE__ << " cuda_hooks  = " << std::hex << cuda_hooks << std::dec << std::endl;
-char str[1024];
-  FILE* fp = fopen("/proc/self/maps", "r");
-  while ((fgets(str, 256, fp)) != NULL) {
-      printf("%s", str);
-  }
-  fclose(fp);
+// char str[1024];
+//   FILE* fp = fopen("/proc/self/maps", "r");
+//   while ((fgets(str, 256, fp)) != NULL) {
+//       printf("%s", str);
+//   }
+//   fclose(fp);
+    std::cerr << __FILE__ << ":" << __LINE__ << " call_once in CUDAHookInterface.cpp" << " cuda_hooks->compiledWithCuDNN() = "  << cuda_hooks->compiledWithCuDNN() << std::endl;
     std::cerr << __FILE__ << ":" << __LINE__ << " call_once in CUDAHookInterface.cpp" << " typeid(*cuda_hooks).name() = "  << typeid(*cuda_hooks).name() << std::endl;
   });
   std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
