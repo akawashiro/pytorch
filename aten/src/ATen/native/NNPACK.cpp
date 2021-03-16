@@ -229,6 +229,7 @@ Tensor _nnpack_spatial_convolution(
   // If we don't have a defined bias Tensor, we need to create one filled with zeroes
   const auto bias_ = bias.defined() ? bias : at::zeros({weight.size(0)}, input.options());
 
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
   const auto compute = [&](const size_t batch_size) -> nnp_status {
     if ((batch_size == 1) || (output_subsample.width != 1) || (output_subsample.height != 1)) {
       const size_t input_size_per_batch = input_channels * input_size.width * input_size.height;
@@ -290,6 +291,7 @@ Tensor _nnpack_spatial_convolution(
     // Run a single pass to get the size of memory workspace buffer
     const auto status = compute(batch_size);
     if (status != nnp_status_success) {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
       throw std::runtime_error("NNPACK SpatialConvolution_updateOutput failed");
     }
     allocate_workspace();
@@ -313,6 +315,7 @@ Tensor _nnpack_spatial_convolution(
   }
 
   if (status != nnp_status_success) {
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
     throw std::runtime_error("NNPACK SpatialConvolution_updateOutput failed");
   }
 

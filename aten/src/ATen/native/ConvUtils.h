@@ -83,6 +83,8 @@ static inline Tensor reshape_bias(int64_t dim, const Tensor& bias) {
 
 static inline bool cudnn_conv_use_channels_last(const at::Tensor& input, const at::Tensor& weight) {
   std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
+  auto hk = detail::getCUDAHooks();
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
   // disable NHWC for float64 input.
   if (!detail::getCUDAHooks().compiledWithCuDNN() ||
       input.scalar_type() == at::kDouble ||

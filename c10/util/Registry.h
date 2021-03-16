@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <iostream>
 #include <cstdlib>
 #include <functional>
 #include <memory>
@@ -118,6 +119,7 @@ class Registry {
       // Returns nullptr if the key is not registered.
       return nullptr;
     }
+  std::cerr << __FILE__ << ":" << __LINE__ << " typeid(registry_[key]).name() = " << typeid(registry_[key]).name() << std::endl;
     return registry_[key](args...);
   }
 
