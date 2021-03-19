@@ -119,7 +119,15 @@ class Registry {
       // Returns nullptr if the key is not registered.
       return nullptr;
     }
-  std::cerr << __FILE__ << ":" << __LINE__ << " typeid(registry_[key]).name() = " << typeid(registry_[key]).name() << std::endl;
+  fprintf(stderr, "%s:%d typeid(registry_[key]).name() = %s\n", __FILE__, __LINE__, typeid(registry_[key]).name());
+  fprintf(stderr, "%s:%d typeid(registry_[key](args...)).name() = %s\n", __FILE__, __LINE__, typeid(registry_[key](args...)).name());
+  fprintf(stderr, "%s:%d typeid(registry_[key](args...).get()).name() = %s\n", __FILE__, __LINE__, typeid(registry_[key](args...).get()).name());
+  fprintf(stderr, "%s:%d registry_[key](args...).get()=%p\n", __FILE__, __LINE__, registry_[key](args...).get());
+  // Crash at the following line with sold
+  fprintf(stderr, "%s:%d typeid(*(registry_[key](args...).get())).name()=%s\n", __FILE__, __LINE__, typeid(*(registry_[key](args...).get())).name());
+  auto p = registry_[key](args...).get();
+  // Crash at the following line even if we do not use sold.
+  fprintf(stderr, "%s:%d typeid(*p).name() = %s\n", __FILE__, __LINE__, typeid(*p).name());
     return registry_[key](args...);
   }
 
