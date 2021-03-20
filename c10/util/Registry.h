@@ -123,6 +123,7 @@ class Registry {
   fprintf(stderr, "%s:%d typeid(registry_[key](args...)).name() = %s\n", __FILE__, __LINE__, typeid(registry_[key](args...)).name());
   fprintf(stderr, "%s:%d typeid(registry_[key](args...).get()).name() = %s\n", __FILE__, __LINE__, typeid(registry_[key](args...).get()).name());
   fprintf(stderr, "%s:%d registry_[key](args...).get()=%p\n", __FILE__, __LINE__, registry_[key](args...).get());
+  fprintf(stderr, "%s:%d *static_cast<uint64_t*>(registry_[key](args...).get())=%ld\n", __FILE__, __LINE__, *reinterpret_cast<uint64_t*>(registry_[key](args...).get()));
   // Crash at the following line with sold
   fprintf(stderr, "%s:%d typeid(*(registry_[key](args...).get())).name()=%s\n", __FILE__, __LINE__, typeid(*(registry_[key](args...).get())).name());
   auto p = registry_[key](args...).get();
@@ -193,7 +194,13 @@ class Registerer {
 
   template <class DerivedType>
   static ObjectPtrType DefaultCreator(Args... args) {
-    return ObjectPtrType(new DerivedType(args...));
+    // I replaced the following line with
+    // return ObjectPtrType(new DerivedType(args...));
+  auto p = new DerivedType(args...);
+  fprintf(stderr, "%s:%d\n", __FILE__, __LINE__);
+  fprintf(stderr, "%s:%d DefaultCreator p=%p\n", __FILE__, __LINE__, p);
+  fprintf(stderr, "%s:%d *p=%ld\n", __FILE__, __LINE__, *reinterpret_cast<u_int64_t*>(p));
+    return ObjectPtrType(p);
   }
 };
 
