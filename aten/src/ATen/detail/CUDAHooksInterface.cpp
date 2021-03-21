@@ -52,7 +52,9 @@ const CUDAHooksInterface& getCUDAHooks() {
     std::cerr << __FILE__ << ":" << __LINE__ << " call_once in CUDAHookInterface.cpp" << std::endl;
     auto c = p->Create("CUDAHooks", CUDAHooksArgs{});
     std::cerr << __FILE__ << ":" << __LINE__ << " call_once in CUDAHookInterface.cpp" << " typeid(c) = " << typeid(c).name() << std::endl;
-    cuda_hooks = c.release();
+    // TODO(akawashiro) Use shared_ptr instead of unique_ptr
+    // cuda_hooks = c.release();
+    cuda_hooks = c.get();
     std::cerr << __FILE__ << ":" << __LINE__ << " cuda_hooks  = " << std::hex << cuda_hooks << std::dec << std::endl;
     std::cerr << __FILE__ << ":" << __LINE__ << " call_once in CUDAHookInterface.cpp" << std::endl;
     if (!cuda_hooks) {
@@ -79,6 +81,8 @@ const CUDAHooksInterface& getCUDAHooks() {
 }
 } // namespace detail
 
-C10_DEFINE_REGISTRY(CUDAHooksRegistry, CUDAHooksInterface, CUDAHooksArgs)
+// TODO(akawashiro) Use shared
+// C10_DEFINE_REGISTRY(CUDAHooksRegistry, CUDAHooksInterface, CUDAHooksArgs)
+C10_DEFINE_SHARED_REGISTRY(CUDAHooksRegistry, CUDAHooksInterface, CUDAHooksArgs)
 
 } // namespace at

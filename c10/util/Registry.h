@@ -122,8 +122,11 @@ class Registry {
   fprintf(stderr, "%s:%d typeid(registry_[key]).name() = %s\n", __FILE__, __LINE__, typeid(registry_[key]).name());
   fprintf(stderr, "%s:%d typeid(registry_[key](args...)).name() = %s\n", __FILE__, __LINE__, typeid(registry_[key](args...)).name());
   fprintf(stderr, "%s:%d typeid(registry_[key](args...).get()).name() = %s\n", __FILE__, __LINE__, typeid(registry_[key](args...).get()).name());
+  auto get_p = registry_[key](args...).get();
+  fprintf(stderr, "%s:%d get_p=%p\n", __FILE__, __LINE__, get_p);
+  fprintf(stderr, "%s:%d *reinterpret_cast<uint64_t*>(get_p)=%ld\n", __FILE__, __LINE__, *reinterpret_cast<uint64_t*>(get_p));
   fprintf(stderr, "%s:%d registry_[key](args...).get()=%p\n", __FILE__, __LINE__, registry_[key](args...).get());
-  fprintf(stderr, "%s:%d *static_cast<uint64_t*>(registry_[key](args...).get())=%ld\n", __FILE__, __LINE__, *reinterpret_cast<uint64_t*>(registry_[key](args...).get()));
+  fprintf(stderr, "%s:%d *reinterpret_cast<uint64_t*>(registry_[key](args...).get())=%ld\n", __FILE__, __LINE__, *reinterpret_cast<uint64_t*>(registry_[key](args...).get()));
   // Crash at the following line with sold
   fprintf(stderr, "%s:%d typeid(*(registry_[key](args...).get())).name()=%s\n", __FILE__, __LINE__, typeid(*(registry_[key](args...).get())).name());
   auto p = registry_[key](args...).get();
