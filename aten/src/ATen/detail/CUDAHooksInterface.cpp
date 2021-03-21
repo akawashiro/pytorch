@@ -2,6 +2,7 @@
 
 #include <c10/util/Exception.h>
 
+#include <iostream>
 #include <cstddef>
 #include <memory>
 #include <mutex>
@@ -35,12 +36,30 @@ const CUDAHooksInterface& getCUDAHooks() {
   // needing a lock, be careful; it doesn't look like Registry.h is thread
   // safe...)
   static std::once_flag once;
+  std::cerr << __FILE__ << ":" << __LINE__ << " cuda_hooks  = " << std::hex << cuda_hooks << std::dec << std::endl;
+
   std::call_once(once, [] {
-    cuda_hooks = CUDAHooksRegistry()->Create("CUDAHooks", CUDAHooksArgs{}).release();
+    std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
+    auto p = CUDAHooksRegistry();
+    std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
+    auto c = p->Create("CUDAHooks", CUDAHooksArgs{});
+    std::cerr << __FILE__ << ":" << __LINE__ << " typeid(c) = " << typeid(c).name() << std::endl;
+    cuda_hooks = c.release();
+    std::cerr << __FILE__ << ":" << __LINE__ << " cuda_hooks  = " << std::hex << cuda_hooks << std::dec << std::endl;
     if (!cuda_hooks) {
+    std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
       cuda_hooks = new CUDAHooksInterface();
+    std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
     }
+    std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cerr << __FILE__ << ":" << __LINE__ << " cuda_hooks  = " << std::hex << cuda_hooks << std::dec << std::endl;
+    std::cerr << __FILE__ << ":" << __LINE__ << " cuda_hooks->compiledWithCuDNN() = "  << cuda_hooks->compiledWithCuDNN() << std::endl;
+    std::cerr << __FILE__ << ":" << __LINE__ << " typeid(*cuda_hooks).name() = "  << typeid(*cuda_hooks).name() << std::endl;
   });
+  std::cerr << __FILE__ << ":" << __LINE__ << std::endl;
+  std::cerr << __FILE__ << ":" << __LINE__ << " cuda_hooks  = " << std::hex << cuda_hooks << std::dec << std::endl;
+  std::cerr << __FILE__ << ":" << __LINE__ << " cuda_hooks->compiledWithCuDNN() = "  << cuda_hooks->compiledWithCuDNN() << std::endl;
+  std::cerr << __FILE__ << ":" << __LINE__ << " typeid(*cuda_hooks).name() = "  << typeid(*cuda_hooks).name() << std::endl;
   return *cuda_hooks;
 }
 } // namespace detail
