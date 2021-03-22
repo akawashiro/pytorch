@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <iostream>
 #include <cstdlib>
 #include <functional>
 #include <memory>
@@ -118,6 +119,16 @@ class Registry {
       // Returns nullptr if the key is not registered.
       return nullptr;
     }
+  fprintf(stderr, "%s:%d typeid(registry_[key]).name() = %s\n", __FILE__, __LINE__, typeid(registry_[key]).name());
+  fprintf(stderr, "%s:%d typeid(registry_[key](args...)).name() = %s\n", __FILE__, __LINE__, typeid(registry_[key](args...)).name());
+  fprintf(stderr, "%s:%d typeid(registry_[key](args...).get()).name() = %s\n", __FILE__, __LINE__, typeid(registry_[key](args...).get()).name());
+  // CRASH AT THE FOLLOWING LINE WHEN YOU USE SOLD
+  auto get_p = registry_[key](args...).get();
+  fprintf(stderr, "%s:%d get_p=%p\n", __FILE__, __LINE__, get_p);
+  fprintf(stderr, "%s:%d *reinterpret_cast<uint64_t*>(get_p)=%ld\n", __FILE__, __LINE__, *reinterpret_cast<uint64_t*>(get_p));
+  fprintf(stderr, "%s:%d registry_[key](args...).get()=%p\n", __FILE__, __LINE__, registry_[key](args...).get());
+  fprintf(stderr, "%s:%d *reinterpret_cast<uint64_t*>(registry_[key](args...).get())=%ld\n", __FILE__, __LINE__, *reinterpret_cast<uint64_t*>(registry_[key](args...).get()));
+  fprintf(stderr, "%s:%d typeid(*(registry_[key](args...).get())).name()=%s\n", __FILE__, __LINE__, typeid(*(registry_[key](args...).get())).name());
     return registry_[key](args...);
   }
 
@@ -183,7 +194,13 @@ class Registerer {
 
   template <class DerivedType>
   static ObjectPtrType DefaultCreator(Args... args) {
-    return ObjectPtrType(new DerivedType(args...));
+    // I replaced the following line with
+    // return ObjectPtrType(new DerivedType(args...));
+  auto p = new DerivedType(args...);
+  fprintf(stderr, "%s:%d\n", __FILE__, __LINE__);
+  fprintf(stderr, "%s:%d DefaultCreator p=%p\n", __FILE__, __LINE__, p);
+  fprintf(stderr, "%s:%d *p=%ld\n", __FILE__, __LINE__, *reinterpret_cast<u_int64_t*>(p));
+    return ObjectPtrType(p);
   }
 };
 
